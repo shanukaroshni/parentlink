@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ParentLink – Allow Screen Share</title>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #f0f4ff;
+      font-family: 'Sora', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 28px;
+      padding: 40px 28px;
+      text-align: center;
+      box-shadow: 0 8px 40px rgba(108,99,255,0.12);
+      max-width: 360px;
+      width: 100%;
+    }
+
+    .icon-ring {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #6c63ff22, #9c8dff22);
+      border: 3px solid #6c63ff44;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 24px;
+      font-size: 48px;
+      animation: float 3s ease-in-out infinite;
+    }
+    @keyframes float {
+      0%,100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+
+    .title {
+      font-size: 26px;
+      font-weight: 800;
+      color: #1a1a2e;
+      line-height: 1.2;
+      margin-bottom: 12px;
+    }
+    .subtitle {
+      font-size: 16px;
+      color: #6b7280;
+      line-height: 1.6;
+      margin-bottom: 32px;
+    }
+    .subtitle strong { color: #6c63ff; }
+
+    /* THE BIG BUTTON */
+    .allow-btn {
+      width: 100%;
+      padding: 22px;
+      background: linear-gradient(135deg, #6c63ff, #9c8dff);
+      color: white;
+      border: none;
+      border-radius: 20px;
+      font-family: 'Sora', sans-serif;
+      font-size: 22px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 6px 30px rgba(108,99,255,0.4);
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+    }
+    .allow-btn:hover { transform: scale(1.02); box-shadow: 0 10px 40px rgba(108,99,255,0.5); }
+    .allow-btn:active { transform: scale(0.98); }
+    .allow-btn:disabled { background: #d1d5db; box-shadow: none; cursor: not-allowed; transform: none; }
+
+    .safety-note {
+      margin-top: 20px;
+      font-size: 13px;
+      color: #9ca3af;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    /* Status screens */
+    .status-screen {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
+    .status-screen.visible { display: flex; }
+
+    .big-emoji { font-size: 64px; animation: float 3s ease-in-out infinite; }
+
+    .status-title {
+      font-size: 22px;
+      font-weight: 700;
+      color: #1a1a2e;
+    }
+    .status-sub {
+      font-size: 15px;
+      color: #6b7280;
+      text-align: center;
+      line-height: 1.6;
+    }
+
+    .loader {
+      width: 48px;
+      height: 48px;
+      border: 4px solid #e5e7eb;
+      border-top-color: #6c63ff;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Error screen */
+    .error-card {
+      background: #fff1f2;
+      border: 1px solid #fecdd3;
+      border-radius: 16px;
+      padding: 20px;
+      margin-top: 20px;
+      font-size: 14px;
+      color: #9f1239;
+      display: none;
+    }
+    .error-card.visible { display: block; }
+  </style>
+</head>
+<body>
+
+<div class="card">
+
+  <!-- Default view -->
+  <div id="main-view">
+    <div class="icon-ring">📱</div>
+    <div class="title">Your child wants to help you!</div>
+    <div class="subtitle">
+      Tap the button below to let <strong>your child see your screen</strong> and help you.
+    </div>
+
+    <button class="allow-btn" id="allow-btn" onclick="startSharing()">
+      ✅ Allow Help
+    </button>
+
+    <div class="safety-note">
+      🔒 Only your child can see your screen
+    </div>
+
+    <div class="error-card" id="error-card"></div>
+  </div>
+
+  <!-- Sharing view -->
+  <div class="status-screen" id="sharing-view">
+    <div class="big-emoji">🙌</div>
+    <div class="status-title">Your child can see your screen!</div>
+    <div class="status-sub">Just hand the phone normally. They will help you from their phone.</div>
+    <div style="margin-top:8px; padding: 14px 20px; background:#f0fdf4; border-radius:14px; font-size:14px; color:#166534;">
+      ✅ Connection is active
+    </div>
+  </div>
+
+  <!-- Waiting view -->
+  <div class="status-screen" id="waiting-view">
+    <div class="loader"></div>
+    <div class="status-title">Connecting…</div>
+    <div class="status-sub">Please wait, your child is connecting to your phone.</div>
+  </div>
+
+  <!-- Ended view -->
+  <div class="status-screen" id="ended-view">
+    <div class="big-emoji">👋</div>
+    <div class="status-title">All done!</div>
+    <div class="status-sub">Your child has ended the session. You can close this page.</div>
+  </div>
+
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+  // Get session ID from URL
+  const params = new URLSearchParams(window.location.search);
+  const sessionId = params.get('session');
+
+  const socket = io();
+  let peerConnection = null;
+  let localStream = null;
+
+  const iceServers = {
+    iceServers: [
+      { urls: 'stun:stun.l.google.com:19302' },
+      { urls: 'stun:stun1.l.google.com:19302' }
+    ]
+  };
+
+  function show(viewId) {
+    ['main-view', 'sharing-view', 'waiting-view', 'ended-view'].forEach(id => {
+      const el = document.getElementById(id);
+      if (id === viewId) {
+        el.style.display = 'block';
+        if (el.classList.contains('status-screen')) el.classList.add('visible');
+      } else {
+        el.style.display = 'none';
+        el.classList.remove('visible');
+      }
+    });
+  }
+
+  function showError(msg) {
+    const err = document.getElementById('error-card');
+    err.textContent = msg;
+    err.classList.add('visible');
+    document.getElementById('allow-btn').disabled = false;
+    document.getElementById('allow-btn').innerHTML = '✅ Allow Help';
+  }
+
+  async function startSharing() {
+    if (!sessionId) {
+      showError('❌ This link is not valid. Ask your child to send a new link.');
+      return;
+    }
+
+    document.getElementById('allow-btn').disabled = true;
+    document.getElementById('allow-btn').innerHTML = '⏳ Starting…';
+
+    try {
+      // Ask for screen share permission
+      localStream = await navigator.mediaDevices.getDisplayMedia({
+        video: { frameRate: 15 },
+        audio: false
+      });
+    } catch (e) {
+      showError('❌ You tapped Cancel. Please try again and tap "Allow" or "Share".');
+      return;
+    }
+
+    show('waiting-view');
+
+    // Join the session
+    socket.emit('join-session', { sessionId });
+  }
+
+  socket.on('joined-session', async () => {
+    // Create peer connection as "sender"
+    peerConnection = new RTCPeerConnection(iceServers);
+
+    // Add screen stream tracks
+    localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
+
+    peerConnection.onicecandidate = (event) => {
+      if (event.candidate) {
+        socket.emit('signal', { sessionId, data: { type: 'candidate', candidate: event.candidate } });
+      }
+    };
+
+    // Create and send offer
+    const offer = await peerConnection.createOffer();
+    await peerConnection.setLocalDescription(offer);
+    socket.emit('signal', { sessionId, data: { type: 'offer', offer } });
+
+    show('sharing-view');
+  });
+
+  socket.on('signal', async ({ data }) => {
+    if (!peerConnection) return;
+    if (data.type === 'answer') {
+      await peerConnection.setRemoteDescription(new RTCSessionDescription(data.answer));
+    } else if (data.type === 'candidate') {
+      await peerConnection.addIceCandidate(new RTCIceCandidate(data.candidate));
+    }
+  });
+
+  socket.on('peer-disconnected', () => {
+    show('ended-view');
+    if (localStream) localStream.getTracks().forEach(t => t.stop());
+    if (peerConnection) { peerConnection.close(); peerConnection = null; }
+  });
+
+  socket.on('error', ({ message }) => {
+    show('main-view');
+    showError('❌ ' + message);
+  });
+</script>
+</body>
+</html>

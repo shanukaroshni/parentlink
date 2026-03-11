@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ParentLink – Your Control Panel</title>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg: #0a0a0f;
+      --surface: #13131a;
+      --border: #2a2a3a;
+      --accent: #6c63ff;
+      --accent2: #ff6584;
+      --text: #e8e8f0;
+      --muted: #7070a0;
+      --success: #4ade80;
+      --warn: #fbbf24;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Sora', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 24px 16px;
+    }
+
+    /* Subtle grid bg */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(108,99,255,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(108,99,255,0.04) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container { position: relative; z-index: 1; width: 100%; max-width: 480px; }
+
+    header { text-align: center; margin-bottom: 40px; padding-top: 20px; }
+    .logo {
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+    .logo span { color: var(--accent); }
+    .tagline { color: var(--muted); font-size: 14px; margin-top: 6px; }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 28px;
+      margin-bottom: 20px;
+    }
+
+    .card-title {
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: var(--muted);
+      margin-bottom: 20px;
+    }
+
+    .step-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+    .step-num {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      background: rgba(108,99,255,0.15);
+      color: var(--accent);
+      font-size: 13px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .step-text { font-size: 14px; color: var(--text); line-height: 1.5; padding-top: 4px; }
+
+    .btn {
+      width: 100%;
+      padding: 16px;
+      border: none;
+      border-radius: 14px;
+      font-family: 'Sora', sans-serif;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), #9c8dff);
+      color: white;
+      box-shadow: 0 4px 24px rgba(108,99,255,0.3);
+    }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(108,99,255,0.4); }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    .btn-whatsapp {
+      background: linear-gradient(135deg, #25D366, #128C7E);
+      color: white;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .btn-whatsapp.visible { display: flex; }
+    .btn-whatsapp:hover { transform: translateY(-2px); }
+
+    .link-box {
+      display: none;
+      background: rgba(108,99,255,0.08);
+      border: 1px solid rgba(108,99,255,0.25);
+      border-radius: 12px;
+      padding: 14px 16px;
+      margin-top: 16px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: var(--accent);
+      word-break: break-all;
+      line-height: 1.6;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .link-box.visible { display: block; }
+    .link-box:hover { background: rgba(108,99,255,0.14); }
+    .link-hint { font-size: 11px; color: var(--muted); margin-top: 6px; font-family: 'Sora', sans-serif; }
+
+    /* Status badge */
+    .status-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 16px;
+    }
+    .dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--border);
+      transition: background 0.4s;
+    }
+    .dot.waiting { background: var(--warn); box-shadow: 0 0 8px var(--warn); animation: pulse 1.5s infinite; }
+    .dot.connected { background: var(--success); box-shadow: 0 0 8px var(--success); animation: none; }
+    @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.3; } }
+
+    /* Screen view */
+    #screen-section {
+      display: none;
+    }
+    #screen-section.visible { display: block; }
+
+    #remote-screen {
+      width: 100%;
+      border-radius: 16px;
+      border: 2px solid var(--accent);
+      box-shadow: 0 0 40px rgba(108,99,255,0.2);
+      background: #000;
+    }
+
+    .screen-controls {
+      display: flex;
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .btn-small {
+      flex: 1;
+      padding: 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      font-family: 'Sora', sans-serif;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-small:hover { border-color: var(--accent); color: var(--accent); }
+    .btn-small.danger:hover { border-color: var(--accent2); color: var(--accent2); }
+
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: var(--success);
+      color: #000;
+      padding: 10px 20px;
+      border-radius: 100px;
+      font-size: 13px;
+      font-weight: 600;
+      transition: transform 0.3s ease;
+      z-index: 999;
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+  </style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div class="logo">Parent<span>Link</span></div>
+    <div class="tagline">Help your parents from anywhere 🤍</div>
+  </header>
+
+  <!-- Step 1: Generate Link -->
+  <div class="card" id="setup-card">
+    <div class="card-title">How it works</div>
+    <div class="step-row">
+      <div class="step-num">1</div>
+      <div class="step-text">Tap <strong>Generate Link</strong> below</div>
+    </div>
+    <div class="step-row">
+      <div class="step-num">2</div>
+      <div class="step-text">Send the link to your parents via <strong>WhatsApp</strong></div>
+    </div>
+    <div class="step-row">
+      <div class="step-num">3</div>
+      <div class="step-text">They tap the link → tap one big button → you see their screen!</div>
+    </div>
+
+    <button class="btn btn-primary" id="generate-btn" onclick="generateLink()">
+      📲 Generate Link
+    </button>
+
+    <div class="link-box" id="link-box" onclick="copyLink()">
+      <div id="link-text"></div>
+      <div class="link-hint">👆 Tap to copy</div>
+    </div>
+
+    <button class="btn btn-whatsapp" id="whatsapp-btn" onclick="sendWhatsApp()">
+      <svg width="20" height="20" fill="white" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+      Send on WhatsApp
+    </button>
+
+    <div class="status-bar">
+      <div class="dot" id="status-dot"></div>
+      <span id="status-text">Waiting to generate link…</span>
+    </div>
+  </div>
+
+  <!-- Screen View (shown after parent connects) -->
+  <div id="screen-section">
+    <div class="card">
+      <div class="card-title">📱 Parents' Screen — Live</div>
+      <video id="remote-screen" autoplay playsinline></video>
+      <div class="screen-controls">
+        <button class="btn-small" onclick="takeScreenshot()">📸 Screenshot</button>
+        <button class="btn-small danger" onclick="endSession()">❌ End Session</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+  const socket = io();
+  let sessionId = null;
+  let peerConnection = null;
+  let currentLink = '';
+
+  const iceServers = {
+    iceServers: [
+      { urls: 'stun:stun.l.google.com:19302' },
+      { urls: 'stun:stun1.l.google.com:19302' }
+    ]
+  };
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2500);
+  }
+
+  function generateLink() {
+    document.getElementById('generate-btn').disabled = true;
+    document.getElementById('generate-btn').textContent = '⏳ Creating session…';
+    socket.emit('create-session');
+  }
+
+  socket.on('session-created', ({ sessionId: id }) => {
+    sessionId = id;
+    const link = `${window.location.origin}/parent.html?session=${id}`;
+    currentLink = link;
+
+    document.getElementById('link-text').textContent = link;
+    document.getElementById('link-box').classList.add('visible');
+    document.getElementById('whatsapp-btn').classList.add('visible');
+    document.getElementById('generate-btn').textContent = '🔄 Generate New Link';
+    document.getElementById('generate-btn').disabled = false;
+
+    const dot = document.getElementById('status-dot');
+    dot.classList.add('waiting');
+    document.getElementById('status-text').textContent = 'Waiting for parents to tap the link…';
+  });
+
+  socket.on('parent-joined', async () => {
+    document.getElementById('status-dot').classList.remove('waiting');
+    document.getElementById('status-dot').classList.add('connected');
+    document.getElementById('status-text').textContent = 'Parents connected! Setting up screen share…';
+
+    // Create WebRTC peer connection as the "receiver"
+    peerConnection = new RTCPeerConnection(iceServers);
+
+    peerConnection.ontrack = (event) => {
+      const video = document.getElementById('remote-screen');
+      video.srcObject = event.streams[0];
+      document.getElementById('screen-section').classList.add('visible');
+      showToast('✅ Parents screen is live!');
+    };
+
+    peerConnection.onicecandidate = (event) => {
+      if (event.candidate) {
+        socket.emit('signal', { sessionId, data: { type: 'candidate', candidate: event.candidate } });
+      }
+    };
+  });
+
+  socket.on('signal', async ({ data }) => {
+    if (!peerConnection) return;
+    if (data.type === 'offer') {
+      await peerConnection.setRemoteDescription(new RTCSessionDescription(data.offer));
+      const answer = await peerConnection.createAnswer();
+      await peerConnection.setLocalDescription(answer);
+      socket.emit('signal', { sessionId, data: { type: 'answer', answer } });
+    } else if (data.type === 'candidate') {
+      await peerConnection.addIceCandidate(new RTCIceCandidate(data.candidate));
+    }
+  });
+
+  socket.on('peer-disconnected', () => {
+    document.getElementById('status-dot').classList.remove('connected');
+    document.getElementById('status-text').textContent = 'Connection ended.';
+    document.getElementById('screen-section').classList.remove('visible');
+    showToast('📴 Parents disconnected');
+    if (peerConnection) { peerConnection.close(); peerConnection = null; }
+  });
+
+  function copyLink() {
+    navigator.clipboard.writeText(currentLink).then(() => showToast('✅ Link copied!'));
+  }
+
+  function sendWhatsApp() {
+    const msg = encodeURIComponent(`Amma/Nanna, please tap this link so I can help you 🙏\n\n${currentLink}`);
+    window.open(`https://wa.me/?text=${msg}`, '_blank');
+  }
+
+  function takeScreenshot() {
+    const video = document.getElementById('remote-screen');
+    const canvas = document.createElement('canvas');
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    canvas.getContext('2d').drawImage(video, 0, 0);
+    const a = document.createElement('a');
+    a.download = `parentlink-screenshot-${Date.now()}.png`;
+    a.href = canvas.toDataURL();
+    a.click();
+    showToast('📸 Screenshot saved!');
+  }
+
+  function endSession() {
+    if (peerConnection) { peerConnection.close(); peerConnection = null; }
+    socket.disconnect();
+    document.getElementById('screen-section').classList.remove('visible');
+    document.getElementById('status-dot').className = 'dot';
+    document.getElementById('status-text').textContent = 'Session ended.';
+    showToast('Session ended');
+  }
+</script>
+</body>
+</html>
