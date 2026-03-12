@@ -27,7 +27,6 @@
     }
     @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
     .title { font-size: 24px; font-weight: 800; color: #1a1a2e; margin-bottom: 10px; }
-
     .instructions {
       background: #f8f7ff; border-radius: 14px;
       padding: 16px 18px; margin-bottom: 24px; text-align: left;
@@ -36,7 +35,6 @@
       display: flex; gap: 8px;
       font-size: 15px; color: #374151; padding: 5px 0; line-height: 1.4;
     }
-
     .allow-btn {
       width: 100%; padding: 20px;
       background: linear-gradient(135deg, #22c55e, #16a34a);
@@ -52,21 +50,18 @@
       margin-top: 16px; font-size: 13px; color: #9ca3af;
       display: flex; align-items: center; justify-content: center; gap: 6px;
     }
-
     .view { display: none; }
     .view.active { display: block; }
     .flex-col { display: flex; flex-direction: column; align-items: center; gap: 14px; }
     .big-emoji { font-size: 60px; animation: float 3s ease-in-out infinite; }
     .status-title { font-size: 21px; font-weight: 700; color: #1a1a2e; }
     .status-sub { font-size: 15px; color: #6b7280; text-align: center; line-height: 1.6; }
-
     .loader {
       width: 48px; height: 48px;
       border: 4px solid #e5e7eb; border-top-color: #6c63ff;
       border-radius: 50%; animation: spin 0.8s linear infinite;
     }
     @keyframes spin{to{transform:rotate(360deg)}}
-
     #camera-preview {
       width: 100%; border-radius: 16px; margin: 16px 0;
       border: 3px solid #22c55e; background: #000;
@@ -76,50 +71,82 @@
       padding: 12px 20px; background: #f0fdf4; border-radius: 12px;
       font-size: 15px; color: #166534; font-weight: 600;
     }
+    /* Error box */
     .error-box {
-      background: #fff1f2; border: 1px solid #fecdd3;
-      border-radius: 14px; padding: 16px; margin-top: 16px;
-      font-size: 14px; color: #9f1239; display: none; line-height: 1.7;
+      background: #fff1f2; border: 2px solid #fecdd3;
+      border-radius: 14px; padding: 20px; margin-top: 16px;
+      font-size: 15px; color: #9f1239; line-height: 1.7;
     }
-    .error-box.show { display: block; }
-
-    .debug {
-      font-size: 11px; color: #aaa; margin-top: 10px;
-      font-family: monospace; text-align: left;
+    /* Invalid session — shown immediately if no session param */
+    .invalid-box {
+      background: #fff7ed; border: 2px solid #fed7aa;
+      border-radius: 14px; padding: 20px; margin-top: 16px;
+      font-size: 15px; color: #9a3412; line-height: 1.7; text-align: left;
     }
+    .invalid-box strong { display: block; font-size: 17px; margin-bottom: 8px; }
+    /* Steps for camera permission */
+    .perm-steps {
+      background: #fffbeb; border: 2px solid #fde68a;
+      border-radius: 14px; padding: 20px; margin-top: 16px;
+      font-size: 14px; color: #92400e; line-height: 1.8; text-align: left;
+      display: none;
+    }
+    .perm-steps.show { display: block; }
+    .perm-steps strong { display: block; font-size: 16px; margin-bottom: 8px; color: #78350f; }
   </style>
 </head>
 <body>
 <div class="card">
 
-  <!-- VIEW 1: Main -->
+  <!-- VIEW 1: Main — shown only if session exists -->
   <div id="v-main" class="view active">
     <div class="icon-ring">👨‍👩‍👧</div>
     <div class="title">Your child wants to help you!</div>
     <div class="instructions">
       <span>1️⃣ Tap the green button below</span>
-      <span>2️⃣ Tap <strong>"Allow"</strong> when camera asks</span>
-      <span>3️⃣ Point your phone at what you need help with</span>
+      <span>2️⃣ A box will appear — tap <strong>"Allow"</strong></span>
+      <span>3️⃣ Point phone at what you need help with</span>
       <span>4️⃣ Your child will guide you!</span>
     </div>
     <button class="allow-btn" id="allow-btn" onclick="startCamera()">
       ✅ Allow Help
     </button>
     <div class="safety-note">🔒 Only your child can see and hear this</div>
-    <div class="error-box" id="error-box"></div>
+
+    <!-- Permission help shown after deny -->
+    <div class="perm-steps" id="perm-steps">
+      <strong>📷 How to allow camera:</strong>
+      1. Look at the top of your browser<br>
+      2. Tap the 🔒 lock icon or the camera icon<br>
+      3. Tap <strong>Allow</strong> for Camera and Microphone<br>
+      4. Refresh this page and tap Allow Help again
+    </div>
   </div>
 
-  <!-- VIEW 2: Connecting -->
+  <!-- VIEW 2: No session — wrong link -->
+  <div id="v-no-session" class="view">
+    <div class="icon-ring">⚠️</div>
+    <div class="title">Link is not valid</div>
+    <div class="invalid-box">
+      <strong>This link has expired or is incorrect.</strong>
+      Please ask your child to:<br>
+      1. Open ParentLink on their phone<br>
+      2. Tap "Generate Link"<br>
+      3. Send you the new link on WhatsApp<br><br>
+      Then tap the new link.
+    </div>
+  </div>
+
+  <!-- VIEW 3: Connecting -->
   <div id="v-connecting" class="view">
     <div class="flex-col" style="padding:20px 0">
       <div class="loader"></div>
       <div class="status-title">Connecting…</div>
       <div class="status-sub">Please wait, connecting to your child.</div>
-      <div class="debug" id="debug-log"></div>
     </div>
   </div>
 
-  <!-- VIEW 3: Connected -->
+  <!-- VIEW 4: Connected -->
   <div id="v-connected" class="view">
     <div style="font-size:15px;color:#374151;margin-bottom:8px;font-weight:600;">
       📷 Point your phone at what you need help with:
@@ -128,7 +155,7 @@
     <div class="connected-badge">✅ Your child can see this — they are helping you!</div>
   </div>
 
-  <!-- VIEW 4: Ended -->
+  <!-- VIEW 5: Ended -->
   <div id="v-ended" class="view">
     <div class="flex-col" style="padding:20px 0">
       <div class="big-emoji">👋</div>
@@ -141,7 +168,15 @@
 
 <script src="/socket.io/socket.io.js"></script>
 <script>
+  // ── Check session ID immediately on page load ──
   const sessionId = new URLSearchParams(window.location.search).get('session');
+
+  // If no session in URL, show invalid screen right away — don't wait
+  if (!sessionId) {
+    document.getElementById('v-main').classList.remove('active');
+    document.getElementById('v-no-session').classList.add('active');
+  }
+
   const socket = io();
   let pc = null;
   let stream = null;
@@ -152,94 +187,82 @@
     document.getElementById(id).classList.add('active');
   }
 
-  function debug(msg) {
-    const el = document.getElementById('debug-log');
-    if (el) el.innerHTML += msg + '<br>';
-    console.log(msg);
-  }
-
-  function showError(msg) {
-    const box = document.getElementById('error-box');
-    box.innerHTML = msg;
-    box.classList.add('show');
-    const btn = document.getElementById('allow-btn');
-    btn.disabled = false;
-    btn.innerHTML = '✅ Allow Help';
-    show('v-main');
-  }
-
-  // Fetch ICE config (with TURN) from our server
   async function getIceConfig() {
     try {
       const res = await fetch('/ice-config');
-      const data = await res.json();
-      return data;
+      return await res.json();
     } catch(e) {
-      return { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
+      return { iceServers: [
+        { urls: 'stun:stun.l.google.com:19302' },
+        { urls: 'turn:openrelay.metered.ca:443', username: 'openrelayproject', credential: 'openrelayproject' }
+      ]};
     }
   }
 
   async function startCamera() {
-    if (!sessionId) {
-      showError('❌ This link is not valid or has expired.<br>Ask your child to send you a new link on WhatsApp.');
-      return;
-    }
     const btn = document.getElementById('allow-btn');
     btn.disabled = true;
     btn.innerHTML = '⏳ Opening camera…';
 
     try {
-      stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 } },
-        audio: true
-      });
+      // Try back camera first (environment), fall back to any camera
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: { ideal: 'environment' } },
+          audio: true
+        });
+      } catch(e1) {
+        // If back camera fails, try any camera
+        stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+      }
     } catch(e) {
-      if (e.name === 'NotAllowedError') {
-        showError('❌ Camera was blocked.<br><br>Tap the 🔒 lock icon in your browser address bar → Allow Camera and Microphone → then try again.');
+      btn.disabled = false;
+      btn.innerHTML = '✅ Allow Help';
+
+      if (e.name === 'NotAllowedError' || e.name === 'PermissionDeniedError') {
+        document.getElementById('perm-steps').classList.add('show');
+      } else if (e.name === 'NotFoundError') {
+        document.getElementById('perm-steps').innerHTML =
+          '<strong>❌ No camera found</strong>This phone does not have a camera that can be used. Please ask your child to call you instead.';
+        document.getElementById('perm-steps').classList.add('show');
       } else {
-        showError('❌ Could not start camera. Please try again.<br><small style="color:#aaa">' + e.message + '</small>');
+        document.getElementById('perm-steps').innerHTML =
+          '<strong>❌ Something went wrong</strong>Error: ' + e.message + '<br>Please close this page, tap the link again, and try once more.';
+        document.getElementById('perm-steps').classList.add('show');
       }
       return;
     }
 
+    // Show preview to parent
     document.getElementById('camera-preview').srcObject = stream;
     iceConfig = await getIceConfig();
     show('v-connecting');
-    debug('📡 Joining session…');
     socket.emit('join-session', { sessionId });
   }
 
   socket.on('joined-session', async () => {
-    debug('✅ Joined session, creating connection…');
     pc = new RTCPeerConnection(iceConfig);
     stream.getTracks().forEach(t => pc.addTrack(t, stream));
 
     pc.onicecandidate = e => {
-      if (e.candidate) {
+      if (e.candidate)
         socket.emit('signal', { sessionId, data: { type: 'candidate', candidate: e.candidate }});
-      }
     };
 
     pc.oniceconnectionstatechange = () => {
-      debug('ICE: ' + pc.iceConnectionState);
-      if (pc.iceConnectionState === 'connected' || pc.iceConnectionState === 'completed') {
+      if (pc.iceConnectionState === 'connected' || pc.iceConnectionState === 'completed')
         show('v-connected');
-      }
-      if (pc.iceConnectionState === 'failed') {
-        debug('❌ ICE failed - trying restart');
+      if (pc.iceConnectionState === 'failed')
         pc.restartIce();
-      }
     };
 
     pc.onconnectionstatechange = () => {
-      debug('Conn: ' + pc.connectionState);
       if (pc.connectionState === 'connected') show('v-connected');
     };
 
     const offer = await pc.createOffer();
     await pc.setLocalDescription(offer);
     socket.emit('signal', { sessionId, data: { type: 'offer', offer }});
-    debug('📤 Offer sent');
   });
 
   socket.on('signal', async ({ data }) => {
@@ -247,14 +270,11 @@
     try {
       if (data.type === 'answer') {
         await pc.setRemoteDescription(new RTCSessionDescription(data.answer));
-        debug('📥 Answer received');
-        setTimeout(() => show('v-connected'), 2000);
-      } else if (data.type === 'candidate') {
-        if (pc.remoteDescription) {
-          await pc.addIceCandidate(new RTCIceCandidate(data.candidate));
-        }
+        setTimeout(() => show('v-connected'), 1500);
+      } else if (data.type === 'candidate' && pc.remoteDescription) {
+        await pc.addIceCandidate(new RTCIceCandidate(data.candidate));
       }
-    } catch(e) { debug('Signal error: ' + e.message); }
+    } catch(e) { console.error(e); }
   });
 
   socket.on('peer-disconnected', () => {
@@ -264,7 +284,7 @@
   });
 
   socket.on('error', ({ message }) => {
-    showError('❌ ' + message + '<br>Please ask your child to send a new link.');
+    show('v-no-session');
   });
 </script>
 </body>
