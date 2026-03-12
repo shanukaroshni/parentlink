@@ -7,209 +7,110 @@
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
   <style>
     :root {
-      --bg: #0a0a0f;
-      --surface: #13131a;
-      --border: #2a2a3a;
-      --accent: #6c63ff;
-      --accent2: #ff6584;
-      --text: #e8e8f0;
-      --muted: #7070a0;
-      --success: #4ade80;
-      --warn: #fbbf24;
+      --bg: #0a0a0f; --surface: #13131a; --border: #2a2a3a;
+      --accent: #6c63ff; --accent2: #ff6584; --text: #e8e8f0;
+      --muted: #7070a0; --success: #4ade80; --warn: #fbbf24;
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-      background: var(--bg);
-      color: var(--text);
+      background: var(--bg); color: var(--text);
       font-family: 'Sora', sans-serif;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 24px 16px;
+      min-height: 100vh; display: flex; flex-direction: column;
+      align-items: center; padding: 24px 16px;
     }
-
-    /* Subtle grid bg */
     body::before {
-      content: '';
-      position: fixed;
-      inset: 0;
+      content: ''; position: fixed; inset: 0;
       background-image:
         linear-gradient(rgba(108,99,255,0.04) 1px, transparent 1px),
         linear-gradient(90deg, rgba(108,99,255,0.04) 1px, transparent 1px);
-      background-size: 40px 40px;
-      pointer-events: none;
-      z-index: 0;
+      background-size: 40px 40px; pointer-events: none; z-index: 0;
     }
-
     .container { position: relative; z-index: 1; width: 100%; max-width: 480px; }
-
     header { text-align: center; margin-bottom: 40px; padding-top: 20px; }
-    .logo {
-      font-size: 28px;
-      font-weight: 700;
-      letter-spacing: -0.5px;
-    }
+    .logo { font-size: 28px; font-weight: 700; letter-spacing: -0.5px; }
     .logo span { color: var(--accent); }
     .tagline { color: var(--muted); font-size: 14px; margin-top: 6px; }
-
     .card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 28px;
-      margin-bottom: 20px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 20px; padding: 28px; margin-bottom: 20px;
     }
-
     .card-title {
-      font-size: 13px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 1.5px;
-      color: var(--muted);
-      margin-bottom: 20px;
+      font-size: 13px; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 1.5px; color: var(--muted); margin-bottom: 20px;
     }
-
-    .step-row {
-      display: flex;
-      align-items: flex-start;
-      gap: 14px;
-      margin-bottom: 16px;
-    }
+    .step-row { display: flex; align-items: flex-start; gap: 14px; margin-bottom: 16px; }
     .step-num {
-      width: 28px;
-      height: 28px;
-      border-radius: 8px;
-      background: rgba(108,99,255,0.15);
-      color: var(--accent);
-      font-size: 13px;
-      font-weight: 600;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      font-family: 'JetBrains Mono', monospace;
+      width: 28px; height: 28px; border-radius: 8px;
+      background: rgba(108,99,255,0.15); color: var(--accent);
+      font-size: 13px; font-weight: 600;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; font-family: 'JetBrains Mono', monospace;
     }
     .step-text { font-size: 14px; color: var(--text); line-height: 1.5; padding-top: 4px; }
-
     .btn {
-      width: 100%;
-      padding: 16px;
-      border: none;
-      border-radius: 14px;
-      font-family: 'Sora', sans-serif;
-      font-size: 15px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s ease;
+      width: 100%; padding: 16px; border: none; border-radius: 14px;
+      font-family: 'Sora', sans-serif; font-size: 15px; font-weight: 600;
+      cursor: pointer; transition: all 0.2s ease;
     }
     .btn-primary {
       background: linear-gradient(135deg, var(--accent), #9c8dff);
-      color: white;
-      box-shadow: 0 4px 24px rgba(108,99,255,0.3);
+      color: white; box-shadow: 0 4px 24px rgba(108,99,255,0.3);
     }
     .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(108,99,255,0.4); }
     .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-
     .btn-whatsapp {
       background: linear-gradient(135deg, #25D366, #128C7E);
-      color: white;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      margin-top: 12px;
+      color: white; display: none; align-items: center;
+      justify-content: center; gap: 10px; margin-top: 12px;
     }
     .btn-whatsapp.visible { display: flex; }
     .btn-whatsapp:hover { transform: translateY(-2px); }
-
     .link-box {
-      display: none;
-      background: rgba(108,99,255,0.08);
-      border: 1px solid rgba(108,99,255,0.25);
-      border-radius: 12px;
-      padding: 14px 16px;
-      margin-top: 16px;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 12px;
-      color: var(--accent);
-      word-break: break-all;
-      line-height: 1.6;
-      cursor: pointer;
-      transition: background 0.2s;
+      display: none; background: rgba(108,99,255,0.08);
+      border: 1px solid rgba(108,99,255,0.25); border-radius: 12px;
+      padding: 14px 16px; margin-top: 16px;
+      font-family: 'JetBrains Mono', monospace; font-size: 12px;
+      color: var(--accent); word-break: break-all; line-height: 1.6;
+      cursor: pointer; transition: background 0.2s;
     }
     .link-box.visible { display: block; }
     .link-box:hover { background: rgba(108,99,255,0.14); }
     .link-hint { font-size: 11px; color: var(--muted); margin-top: 6px; font-family: 'Sora', sans-serif; }
-
-    /* Status badge */
-    .status-bar {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 13px;
-      color: var(--muted);
-      margin-top: 16px;
-    }
-    .dot {
-      width: 8px; height: 8px;
-      border-radius: 50%;
-      background: var(--border);
-      transition: background 0.4s;
-    }
+    .status-bar { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); margin-top: 16px; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border); transition: background 0.4s; }
     .dot.waiting { background: var(--warn); box-shadow: 0 0 8px var(--warn); animation: pulse 1.5s infinite; }
-    .dot.connected { background: var(--success); box-shadow: 0 0 8px var(--success); animation: none; }
-    @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.3; } }
-
-    /* Screen view */
-    #screen-section {
-      display: none;
-    }
+    .dot.connected { background: var(--success); box-shadow: 0 0 8px var(--success); }
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+    #screen-section { display: none; }
     #screen-section.visible { display: block; }
-
     #remote-screen {
-      width: 100%;
-      border-radius: 16px;
+      width: 100%; border-radius: 16px;
       border: 2px solid var(--accent);
       box-shadow: 0 0 40px rgba(108,99,255,0.2);
-      background: #000;
+      background: #000; max-height: 500px; object-fit: contain;
     }
-
-    .screen-controls {
-      display: flex;
-      gap: 10px;
-      margin-top: 12px;
-    }
+    .screen-controls { display: flex; gap: 10px; margin-top: 12px; }
     .btn-small {
-      flex: 1;
-      padding: 12px;
-      border-radius: 10px;
-      border: 1px solid var(--border);
-      background: var(--surface);
-      color: var(--text);
-      font-family: 'Sora', sans-serif;
-      font-size: 13px;
-      cursor: pointer;
-      transition: all 0.2s;
+      flex: 1; padding: 12px; border-radius: 10px;
+      border: 1px solid var(--border); background: var(--surface);
+      color: var(--text); font-family: 'Sora', sans-serif;
+      font-size: 13px; cursor: pointer; transition: all 0.2s;
     }
     .btn-small:hover { border-color: var(--accent); color: var(--accent); }
     .btn-small.danger:hover { border-color: var(--accent2); color: var(--accent2); }
-
     .toast {
-      position: fixed;
-      bottom: 24px;
-      left: 50%;
+      position: fixed; bottom: 24px; left: 50%;
       transform: translateX(-50%) translateY(80px);
-      background: var(--success);
-      color: #000;
-      padding: 10px 20px;
-      border-radius: 100px;
-      font-size: 13px;
-      font-weight: 600;
-      transition: transform 0.3s ease;
-      z-index: 999;
+      background: var(--success); color: #000;
+      padding: 10px 20px; border-radius: 100px;
+      font-size: 13px; font-weight: 600;
+      transition: transform 0.3s ease; z-index: 999;
     }
     .toast.show { transform: translateX(-50%) translateY(0); }
+    .conn-status {
+      font-size: 12px; color: var(--muted); margin-top: 8px;
+      font-family: 'JetBrains Mono', monospace;
+    }
   </style>
 </head>
 <body>
@@ -219,25 +120,13 @@
     <div class="tagline">Help your parents from anywhere 🤍</div>
   </header>
 
-  <!-- Step 1: Generate Link -->
   <div class="card" id="setup-card">
     <div class="card-title">How it works</div>
-    <div class="step-row">
-      <div class="step-num">1</div>
-      <div class="step-text">Tap <strong>Generate Link</strong> below</div>
-    </div>
-    <div class="step-row">
-      <div class="step-num">2</div>
-      <div class="step-text">Send the link to your parents via <strong>WhatsApp</strong></div>
-    </div>
-    <div class="step-row">
-      <div class="step-num">3</div>
-      <div class="step-text">They tap the link → tap one big button → you see their screen!</div>
-    </div>
+    <div class="step-row"><div class="step-num">1</div><div class="step-text">Tap <strong>Generate Link</strong> below</div></div>
+    <div class="step-row"><div class="step-num">2</div><div class="step-text">Send the link to your parents via <strong>WhatsApp</strong></div></div>
+    <div class="step-row"><div class="step-num">3</div><div class="step-text">They tap the link → tap the green button → you see their camera!</div></div>
 
-    <button class="btn btn-primary" id="generate-btn" onclick="generateLink()">
-      📲 Generate Link
-    </button>
+    <button class="btn btn-primary" id="generate-btn" onclick="generateLink()">📲 Generate Link</button>
 
     <div class="link-box" id="link-box" onclick="copyLink()">
       <div id="link-text"></div>
@@ -255,19 +144,17 @@
     </div>
   </div>
 
-  <!-- Screen View (shown after parent connects) -->
   <div id="screen-section">
     <div class="card">
       <div class="card-title">📷 Parents' Camera — Live</div>
       <video id="remote-screen" autoplay playsinline></video>
-      <div style="font-size:13px; color:var(--muted); margin-top:8px;">🎙️ Audio is live — you can hear them too</div>
+      <div class="conn-status" id="conn-status"></div>
       <div class="screen-controls">
         <button class="btn-small" onclick="takeScreenshot()">📸 Screenshot</button>
         <button class="btn-small danger" onclick="endSession()">❌ End Session</button>
       </div>
     </div>
   </div>
-
 </div>
 
 <div class="toast" id="toast"></div>
@@ -276,21 +163,29 @@
 <script>
   const socket = io();
   let sessionId = null;
-  let peerConnection = null;
+  let pc = null;
   let currentLink = '';
+  let iceConfig = null;
 
-  const iceServers = {
-    iceServers: [
-      { urls: 'stun:stun.l.google.com:19302' },
-      { urls: 'stun:stun1.l.google.com:19302' }
-    ]
-  };
+  async function getIceConfig() {
+    try {
+      const res = await fetch('/ice-config');
+      return await res.json();
+    } catch(e) {
+      return { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
+    }
+  }
 
   function showToast(msg) {
     const t = document.getElementById('toast');
     t.textContent = msg;
     t.classList.add('show');
     setTimeout(() => t.classList.remove('show'), 2500);
+  }
+
+  function setConnStatus(msg) {
+    const el = document.getElementById('conn-status');
+    if(el) el.textContent = msg;
   }
 
   function generateLink() {
@@ -303,58 +198,63 @@
     sessionId = id;
     const link = `${window.location.origin}/parent.html?session=${id}`;
     currentLink = link;
-
     document.getElementById('link-text').textContent = link;
     document.getElementById('link-box').classList.add('visible');
     document.getElementById('whatsapp-btn').classList.add('visible');
     document.getElementById('generate-btn').textContent = '🔄 Generate New Link';
     document.getElementById('generate-btn').disabled = false;
-
-    const dot = document.getElementById('status-dot');
-    dot.classList.add('waiting');
+    document.getElementById('status-dot').classList.add('waiting');
     document.getElementById('status-text').textContent = 'Waiting for parents to tap the link…';
   });
 
   socket.on('parent-joined', async () => {
     document.getElementById('status-dot').classList.remove('waiting');
-    document.getElementById('status-dot').classList.add('connected');
-    document.getElementById('status-text').textContent = 'Parents connected! Setting up screen share…';
+    document.getElementById('status-text').textContent = 'Parents connected! Setting up video…';
+    iceConfig = await getIceConfig();
 
-    // Create WebRTC peer connection as the "receiver"
-    peerConnection = new RTCPeerConnection(iceServers);
+    pc = new RTCPeerConnection(iceConfig);
 
-    peerConnection.ontrack = (event) => {
+    pc.ontrack = (event) => {
       const video = document.getElementById('remote-screen');
       video.srcObject = event.streams[0];
       document.getElementById('screen-section').classList.add('visible');
-      showToast('✅ Parents screen is live!');
+      document.getElementById('status-dot').classList.add('connected');
+      document.getElementById('status-text').textContent = 'Parents connected — camera is live!';
+      showToast('✅ You can now see parents camera!');
     };
 
-    peerConnection.onicecandidate = (event) => {
-      if (event.candidate) {
-        socket.emit('signal', { sessionId, data: { type: 'candidate', candidate: event.candidate } });
+    pc.onicecandidate = (e) => {
+      if (e.candidate) socket.emit('signal', { sessionId, data: { type: 'candidate', candidate: e.candidate }});
+    };
+
+    pc.oniceconnectionstatechange = () => {
+      setConnStatus('Connection: ' + pc.iceConnectionState);
+      if (pc.iceConnectionState === 'failed') {
+        setConnStatus('⚠️ Connection failed — ask parents to tap Allow Help again');
       }
     };
   });
 
   socket.on('signal', async ({ data }) => {
-    if (!peerConnection) return;
-    if (data.type === 'offer') {
-      await peerConnection.setRemoteDescription(new RTCSessionDescription(data.offer));
-      const answer = await peerConnection.createAnswer();
-      await peerConnection.setLocalDescription(answer);
-      socket.emit('signal', { sessionId, data: { type: 'answer', answer } });
-    } else if (data.type === 'candidate') {
-      await peerConnection.addIceCandidate(new RTCIceCandidate(data.candidate));
-    }
+    if (!pc) return;
+    try {
+      if (data.type === 'offer') {
+        await pc.setRemoteDescription(new RTCSessionDescription(data.offer));
+        const answer = await pc.createAnswer();
+        await pc.setLocalDescription(answer);
+        socket.emit('signal', { sessionId, data: { type: 'answer', answer }});
+      } else if (data.type === 'candidate' && pc.remoteDescription) {
+        await pc.addIceCandidate(new RTCIceCandidate(data.candidate));
+      }
+    } catch(e) { console.error('Signal error:', e); }
   });
 
   socket.on('peer-disconnected', () => {
-    document.getElementById('status-dot').classList.remove('connected');
+    document.getElementById('status-dot').className = 'dot';
     document.getElementById('status-text').textContent = 'Connection ended.';
     document.getElementById('screen-section').classList.remove('visible');
     showToast('📴 Parents disconnected');
-    if (peerConnection) { peerConnection.close(); peerConnection = null; }
+    if (pc) { pc.close(); pc = null; }
   });
 
   function copyLink() {
@@ -362,7 +262,7 @@
   }
 
   function sendWhatsApp() {
-    const msg = encodeURIComponent(`Amma/Nanna, please tap this link so I can help you 🙏\n\n${currentLink}`);
+    const msg = encodeURIComponent(`Amma/Nanna, please tap this link so I can help you 🙏\n\n${currentLink}\n\nTap the green "Allow Help" button when it opens.`);
     window.open(`https://wa.me/?text=${msg}`, '_blank');
   }
 
@@ -373,14 +273,14 @@
     canvas.height = video.videoHeight;
     canvas.getContext('2d').drawImage(video, 0, 0);
     const a = document.createElement('a');
-    a.download = `parentlink-screenshot-${Date.now()}.png`;
+    a.download = `parentlink-${Date.now()}.png`;
     a.href = canvas.toDataURL();
     a.click();
     showToast('📸 Screenshot saved!');
   }
 
   function endSession() {
-    if (peerConnection) { peerConnection.close(); peerConnection = null; }
+    if (pc) { pc.close(); pc = null; }
     socket.disconnect();
     document.getElementById('screen-section').classList.remove('visible');
     document.getElementById('status-dot').className = 'dot';

@@ -4,22 +4,44 @@ const { Server } = require('socket.io');
 const { v4: uuidv4 } = require('uuid');
 const path = require('path');
 
+// ICE servers including TURN relay so phones on Jio/Airtel/BSNL can connect
+const ICE_SERVERS = [
+  { urls: 'stun:stun.l.google.com:19302' },
+  { urls: 'stun:stun1.l.google.com:19302' },
+  { urls: 'stun:stun2.l.google.com:19302' },
+  {
+    urls: 'turn:openrelay.metered.ca:80',
+    username: 'openrelayproject',
+    credential: 'openrelayproject'
+  },
+  {
+    urls: 'turn:openrelay.metered.ca:443',
+    username: 'openrelayproject',
+    credential: 'openrelayproject'
+  },
+  {
+    urls: 'turn:openrelay.metered.ca:443?transport=tcp',
+    username: 'openrelayproject',
+    credential: 'openrelayproject'
+  }
+];
+
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server, {
-  cors: { origin: '*' }
-});
+const io = new Server(server, { cors: { origin: '*' } });
 
-// Serve the frontend files
 app.use(express.static(path.join(__dirname, '../public')));
 
-// Store active sessions: sessionId -> { child, parent }
+// Send ICE config to anyone who asks
+app.get('/ice-config', (req, res) => {
+  res.json({ iceServers: ICE_SERVERS });
+});
+
 const sessions = {};
 
 io.on('connection', (socket) => {
-  console.log('Someone connected:', socket.id);
+  console.log('Connected:', socket.id);
 
-  // CHILD creates a session and gets a link to send to parent
   socket.on('create-session', () => {
     const sessionId = uuidv4();
     sessions[sessionId] = { child: socket.id, parent: null };
@@ -28,7 +50,6 @@ io.on('connection', (socket) => {
     console.log('Session created:', sessionId);
   });
 
-  // PARENT joins by clicking the link
   socket.on('join-session', ({ sessionId }) => {
     const session = sessions[sessionId];
     if (!session) {
@@ -37,19 +58,15 @@ io.on('connection', (socket) => {
     }
     session.parent = socket.id;
     socket.join(sessionId);
-    // Tell the child that parent has joined
     io.to(session.child).emit('parent-joined', { sessionId });
     socket.emit('joined-session', { sessionId });
-    console.log('Parent joined session:', sessionId);
+    console.log('Parent joined:', sessionId);
   });
 
-  // WebRTC signaling — pass messages between child and parent
   socket.on('signal', ({ sessionId, data }) => {
-    // Forward signal to the other person in the session
     socket.to(sessionId).emit('signal', { data });
   });
 
-  // Clean up when someone disconnects
   socket.on('disconnect', () => {
     for (const [sessionId, session] of Object.entries(sessions)) {
       if (session.child === socket.id || session.parent === socket.id) {
@@ -63,5 +80,5 @@ io.on('connection', (socket) => {
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
-  console.log(`ParentLink server running on port ${PORT}`);
+  console.log(`ParentLink running on port ${PORT}`);
 });

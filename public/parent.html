@@ -8,11 +8,9 @@
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-      background: #f0f4ff;
-      font-family: 'Sora', sans-serif;
-      min-height: 100vh;
-      display: flex; align-items: center; justify-content: center;
-      padding: 24px;
+      background: #f0f4ff; font-family: 'Sora', sans-serif;
+      min-height: 100vh; display: flex; align-items: center;
+      justify-content: center; padding: 24px;
     }
     .card {
       background: white; border-radius: 28px; padding: 36px 24px;
@@ -29,16 +27,14 @@
     }
     @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
     .title { font-size: 24px; font-weight: 800; color: #1a1a2e; margin-bottom: 10px; }
-    .subtitle { font-size: 15px; color: #6b7280; line-height: 1.6; margin-bottom: 24px; }
-    .subtitle strong { color: #6c63ff; }
 
     .instructions {
       background: #f8f7ff; border-radius: 14px;
       padding: 16px 18px; margin-bottom: 24px; text-align: left;
     }
     .instructions span {
-      display: flex; align-items: flex-start; gap: 8px;
-      font-size: 15px; color: #374151; padding: 4px 0; line-height: 1.4;
+      display: flex; gap: 8px;
+      font-size: 15px; color: #374151; padding: 5px 0; line-height: 1.4;
     }
 
     .allow-btn {
@@ -52,20 +48,14 @@
     }
     .allow-btn:active { transform: scale(0.97); }
     .allow-btn:disabled { background: #d1d5db; box-shadow: none; cursor: not-allowed; }
-
     .safety-note {
       margin-top: 16px; font-size: 13px; color: #9ca3af;
       display: flex; align-items: center; justify-content: center; gap: 6px;
     }
 
-    /* Views */
     .view { display: none; }
     .view.active { display: block; }
-
-    .flex-col {
-      display: flex; flex-direction: column;
-      align-items: center; gap: 14px;
-    }
+    .flex-col { display: flex; flex-direction: column; align-items: center; gap: 14px; }
     .big-emoji { font-size: 60px; animation: float 3s ease-in-out infinite; }
     .status-title { font-size: 21px; font-weight: 700; color: #1a1a2e; }
     .status-sub { font-size: 15px; color: #6b7280; text-align: center; line-height: 1.6; }
@@ -79,36 +69,39 @@
 
     #camera-preview {
       width: 100%; border-radius: 16px; margin: 16px 0;
-      border: 2px solid #22c55e; background: #000;
+      border: 3px solid #22c55e; background: #000;
+      max-height: 300px; object-fit: cover;
     }
     .connected-badge {
       padding: 12px 20px; background: #f0fdf4; border-radius: 12px;
-      font-size: 14px; color: #166534; font-weight: 600;
+      font-size: 15px; color: #166534; font-weight: 600;
     }
-
     .error-box {
       background: #fff1f2; border: 1px solid #fecdd3;
       border-radius: 14px; padding: 16px; margin-top: 16px;
-      font-size: 14px; color: #9f1239; display: none; line-height: 1.6;
+      font-size: 14px; color: #9f1239; display: none; line-height: 1.7;
     }
     .error-box.show { display: block; }
+
+    .debug {
+      font-size: 11px; color: #aaa; margin-top: 10px;
+      font-family: monospace; text-align: left;
+    }
   </style>
 </head>
 <body>
 <div class="card">
 
-  <!-- VIEW 1: Main prompt -->
+  <!-- VIEW 1: Main -->
   <div id="v-main" class="view active">
     <div class="icon-ring">👨‍👩‍👧</div>
     <div class="title">Your child wants to help you!</div>
-
     <div class="instructions">
       <span>1️⃣ Tap the green button below</span>
       <span>2️⃣ Tap <strong>"Allow"</strong> when camera asks</span>
       <span>3️⃣ Point your phone at what you need help with</span>
-      <span>4️⃣ Your child will talk to you and guide you!</span>
+      <span>4️⃣ Your child will guide you!</span>
     </div>
-
     <button class="allow-btn" id="allow-btn" onclick="startCamera()">
       ✅ Allow Help
     </button>
@@ -118,16 +111,17 @@
 
   <!-- VIEW 2: Connecting -->
   <div id="v-connecting" class="view">
-    <div class="flex-col" style="padding: 20px 0;">
+    <div class="flex-col" style="padding:20px 0">
       <div class="loader"></div>
       <div class="status-title">Connecting…</div>
-      <div class="status-sub">Please wait, your child is connecting.</div>
+      <div class="status-sub">Please wait, connecting to your child.</div>
+      <div class="debug" id="debug-log"></div>
     </div>
   </div>
 
-  <!-- VIEW 3: Connected with camera -->
+  <!-- VIEW 3: Connected -->
   <div id="v-connected" class="view">
-    <div style="font-size:15px; color:#374151; margin-bottom:8px; font-weight:600;">
+    <div style="font-size:15px;color:#374151;margin-bottom:8px;font-weight:600;">
       📷 Point your phone at what you need help with:
     </div>
     <video id="camera-preview" autoplay playsinline muted></video>
@@ -136,7 +130,7 @@
 
   <!-- VIEW 4: Ended -->
   <div id="v-ended" class="view">
-    <div class="flex-col" style="padding: 20px 0;">
+    <div class="flex-col" style="padding:20px 0">
       <div class="big-emoji">👋</div>
       <div class="status-title">All done!</div>
       <div class="status-sub">Your child has finished helping.<br>You can close this page now.</div>
@@ -151,24 +145,38 @@
   const socket = io();
   let pc = null;
   let stream = null;
-
-  const ICE = { iceServers: [
-    { urls: 'stun:stun.l.google.com:19302' },
-    { urls: 'stun:stun1.l.google.com:19302' }
-  ]};
+  let iceConfig = null;
 
   function show(id) {
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
     document.getElementById(id).classList.add('active');
   }
 
+  function debug(msg) {
+    const el = document.getElementById('debug-log');
+    if (el) el.innerHTML += msg + '<br>';
+    console.log(msg);
+  }
+
   function showError(msg) {
     const box = document.getElementById('error-box');
     box.innerHTML = msg;
     box.classList.add('show');
-    document.getElementById('allow-btn').disabled = false;
-    document.getElementById('allow-btn').innerHTML = '✅ Allow Help';
+    const btn = document.getElementById('allow-btn');
+    btn.disabled = false;
+    btn.innerHTML = '✅ Allow Help';
     show('v-main');
+  }
+
+  // Fetch ICE config (with TURN) from our server
+  async function getIceConfig() {
+    try {
+      const res = await fetch('/ice-config');
+      const data = await res.json();
+      return data;
+    } catch(e) {
+      return { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
+    }
   }
 
   async function startCamera() {
@@ -182,39 +190,56 @@
 
     try {
       stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'environment' },
+        video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 } },
         audio: true
       });
     } catch(e) {
       if (e.name === 'NotAllowedError') {
-        showError('❌ Camera was blocked.<br><br>Tap the 🔒 lock icon in your browser bar → Allow Camera and Microphone → then try again.');
+        showError('❌ Camera was blocked.<br><br>Tap the 🔒 lock icon in your browser address bar → Allow Camera and Microphone → then try again.');
       } else {
-        showError('❌ Could not start camera.<br>Please try again.<br><small style="color:#aaa">' + e.message + '</small>');
+        showError('❌ Could not start camera. Please try again.<br><small style="color:#aaa">' + e.message + '</small>');
       }
       return;
     }
 
-    // Attach stream to preview
     document.getElementById('camera-preview').srcObject = stream;
+    iceConfig = await getIceConfig();
     show('v-connecting');
+    debug('📡 Joining session…');
     socket.emit('join-session', { sessionId });
   }
 
   socket.on('joined-session', async () => {
-    pc = new RTCPeerConnection(ICE);
+    debug('✅ Joined session, creating connection…');
+    pc = new RTCPeerConnection(iceConfig);
     stream.getTracks().forEach(t => pc.addTrack(t, stream));
 
     pc.onicecandidate = e => {
-      if (e.candidate) socket.emit('signal', { sessionId, data: { type:'candidate', candidate: e.candidate }});
+      if (e.candidate) {
+        socket.emit('signal', { sessionId, data: { type: 'candidate', candidate: e.candidate }});
+      }
+    };
+
+    pc.oniceconnectionstatechange = () => {
+      debug('ICE: ' + pc.iceConnectionState);
+      if (pc.iceConnectionState === 'connected' || pc.iceConnectionState === 'completed') {
+        show('v-connected');
+      }
+      if (pc.iceConnectionState === 'failed') {
+        debug('❌ ICE failed - trying restart');
+        pc.restartIce();
+      }
     };
 
     pc.onconnectionstatechange = () => {
+      debug('Conn: ' + pc.connectionState);
       if (pc.connectionState === 'connected') show('v-connected');
     };
 
     const offer = await pc.createOffer();
     await pc.setLocalDescription(offer);
-    socket.emit('signal', { sessionId, data: { type:'offer', offer }});
+    socket.emit('signal', { sessionId, data: { type: 'offer', offer }});
+    debug('📤 Offer sent');
   });
 
   socket.on('signal', async ({ data }) => {
@@ -222,12 +247,14 @@
     try {
       if (data.type === 'answer') {
         await pc.setRemoteDescription(new RTCSessionDescription(data.answer));
-        // show connected after answer too (in case onconnectionstatechange fires late)
-        setTimeout(() => show('v-connected'), 1500);
-      } else if (data.type === 'candidate' && pc.remoteDescription) {
-        await pc.addIceCandidate(new RTCIceCandidate(data.candidate));
+        debug('📥 Answer received');
+        setTimeout(() => show('v-connected'), 2000);
+      } else if (data.type === 'candidate') {
+        if (pc.remoteDescription) {
+          await pc.addIceCandidate(new RTCIceCandidate(data.candidate));
+        }
       }
-    } catch(e) { console.error(e); }
+    } catch(e) { debug('Signal error: ' + e.message); }
   });
 
   socket.on('peer-disconnected', () => {
